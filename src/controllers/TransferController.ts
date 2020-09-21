@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
 import SaveDatabase from '../model/SaveDatabse';
 import api from '../utils/api';
+import Log from '../utils/log'
 import { User } from '../interfaces'
 
+
 const saveDatabse = new SaveDatabase();
+const log = new Log();
 
 export default class TransferController {
     async download(request: Request, response: Response) {
         const { data } = await api.get('');
+        log.save(request, undefined);
         response.send(data);
     }
 
@@ -21,14 +25,16 @@ export default class TransferController {
         
         //Save to database
         try{
-            console.log('comecando a escrever no banco')
-            await Promise.all(usersInSuite.map((user: User) => {
-                saveDatabse.save(user)
-            }))
+            await usersInSuite.map((user: User) => {
+                saveDatabse.save(user);
+            })
+
+            return response.send({
+                message: 'Saved info from users in DB!',
+                usersInSuite
+            })
         } catch(e) {
             return response.status(400).send(e.message);
         }
-        console.log('fim')
-        response.send(usersInSuite)
-    }
+    }       
 }
