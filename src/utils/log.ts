@@ -1,27 +1,25 @@
 import fs from 'fs';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import timestamp from './getTime';
 
 export default class Log{
-    save(request: Request, error: Error){
+    saveSucess(request : Request){
         const time = timestamp();
-        
-        if(request != null){
-            const data = `${time} - [${request.method}] from:${request.headers.host}${request.path}`;
-        } else {
-            const data = `${time} - [ERROR] ${error.message}`
-        }
-        // const log = JSON.stringify(data);
-        // fs.writeFileSync('notes.json', log)
+        const data = `${time} - [${request.method}] from:${request.headers.host}${request.path}\n`;
+        fs.appendFileSync('notes.txt', data)
     }
-
-    load(){
+    saveError(error: Error){
+        const time = timestamp();
+        const data = `${time} - [ERROR] ${error.message}\n`;
+        fs.appendFileSync('notes.txt', data);
+    }
+    load(request: Request, response: Response){
         try{
-            const logData = fs.readFileSync('log.json');
+            const logData = fs.readFileSync('notes.txt');
             const log = logData.toString();
-            return JSON.parse(log);
+            return response.send(log);
         } catch (e) {
-            return [];
+            return response.status(400).send(e.message);
         }
     }
 }

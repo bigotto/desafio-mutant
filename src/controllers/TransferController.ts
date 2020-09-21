@@ -10,9 +10,14 @@ const log = new Log();
 
 export default class TransferController {
     async download(request: Request, response: Response) {
-        const { data } = await api.get('');
-        log.save(request, undefined);
-        response.send(data);
+        try{
+            const { data } = await api.get('');
+            log.saveSucess(request);
+            return response.send(data);
+        } catch(e) {
+            log.saveError(e)
+            return response.status(400).send(e.message);
+        }
     }
 
     async save(request: Request, response: Response) {
@@ -29,11 +34,13 @@ export default class TransferController {
                 saveDatabse.save(user);
             })
 
+            log.saveSucess(request);
             return response.send({
                 message: 'Saved info from users in DB!',
                 usersInSuite
             })
         } catch(e) {
+            log.saveError(e);
             return response.status(400).send(e.message);
         }
     }       
